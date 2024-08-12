@@ -1,0 +1,12 @@
+.gradle/
+build/
+out/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+reproducers/
+scripts/backfill_git_history.ps1
