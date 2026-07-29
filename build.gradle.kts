@@ -17,9 +17,21 @@ repositories {
     mavenCentral()
 }
 
+val jazzerStandalone: Configuration by configurations.creating {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+}
+
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     "fuzzImplementation"("com.code-intelligence:jazzer-api:0.24.0")
+    jazzerStandalone("com.code-intelligence:jazzer-standalone:0.24.0")
+}
+
+tasks.register<Copy>("stageJazzer") {
+    from(jazzerStandalone)
+    into(layout.buildDirectory.dir("jazzer"))
+    rename { "jazzer-standalone.jar" }
 }
 
 sourceSets {
@@ -59,5 +71,9 @@ tasks.register<Jar>("fuzzJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(sourceSets["main"].output)
     from(sourceSets["fuzz"].output)
+    dependsOn("compileJava", "compileFuzzJava")
+}
+
+tasks.named("stageJazzer") {
     dependsOn("compileJava", "compileFuzzJava")
 }
