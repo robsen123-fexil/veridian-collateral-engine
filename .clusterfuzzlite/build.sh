@@ -4,16 +4,20 @@ set -euo pipefail
 # Offline-safe build: no curl/wget in this script. Jazzer is staged via Gradle.
 export GRADLE_OPTS="-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Xmx2g"
 
-if [ -x "./gradlew" ]; then
-  GRADLE="./gradlew"
-elif command -v gradle >/dev/null 2>&1; then
-  GRADLE="gradle"
-else
-  echo "error: gradlew or gradle required" >&2
-  exit 1
-fi
+run_gradle() {
+  if [ -f "./gradlew" ]; then
+    # Fenrir checkouts may not preserve the git executable bit; bash does not require +x.
+    bash ./gradlew "$@"
+  elif command -v gradle >/dev/null 2>&1; then
+    gradle "$@"
+  else
+    echo "error: gradlew or gradle required (missing ./gradlew and system gradle)" >&2
+    ls -la . 2>/dev/null || true
+    exit 1
+  fi
+}
 
-"$GRADLE" --no-daemon compileJava compileFuzzJava fuzzJar stageJazzer -q
+run_gradle --no-daemon compileJava compileFuzzJava fuzzJar stageJazzer -q
 
 OUT="${OUT:-$PWD/out}"
 mkdir -p "$OUT"
