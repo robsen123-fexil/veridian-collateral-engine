@@ -186,6 +186,83 @@ public final class Fix44MessageFactory {
         return encode(fields);
     }
 
+    public byte[] buildRecallNotice(String account, String cusip, long qty, String deadline) {
+        List<String> fields = base("RC", account);
+        fields.add(tag(48, cusip));
+        fields.add(tag(53, String.valueOf(qty)));
+        fields.add(tag(929, deadline));
+        return encode(fields);
+    }
+
+    public byte[] buildSubstitutionRequest(String account, String outCusip, String inCusip, double outMv, double inMv) {
+        List<String> fields = base("SR", account);
+        fields.add(tag(48, outCusip));
+        fields.add(tag(55, inCusip));
+        fields.add(tag(910, format(outMv)));
+        fields.add(tag(912, format(inMv)));
+        validateSubstitution(outMv, inMv);
+        return encode(fields);
+    }
+
+    public byte[] buildFeeDebitAdvice(String account, double feeAmount, String feeType) {
+        List<String> fields = base("FD", account);
+        fields.add(tag(910, format(feeAmount)));
+        fields.add(tag(58, feeType));
+        return encode(fields);
+    }
+
+    public byte[] buildCorporateActionNotice(String account, String cusip, String actionType, String payDate) {
+        List<String> fields = base("CA2", account);
+        fields.add(tag(48, cusip));
+        fields.add(tag(58, actionType));
+        fields.add(tag(64, payDate));
+        return encode(fields);
+    }
+
+    public byte[] buildTriPartyStatus(String instructionId, String status, String agent) {
+        List<String> fields = base("TS", "CUSTODY");
+        fields.add(tag(920, instructionId));
+        fields.add(tag(911, status));
+        fields.add(tag(448, agent));
+        return encode(fields);
+    }
+
+    public byte[] buildInventoryReport(String vault, int lineCount, double totalMv) {
+        List<String> fields = base("IR", vault);
+        fields.add(tag(909, String.valueOf(lineCount)));
+        fields.add(tag(910, format(totalMv)));
+        return encode(fields);
+    }
+
+    public byte[] buildRegulatoryCapitalTag(String account, double rwa, double capitalCharge) {
+        List<String> fields = base("RCAP", account);
+        fields.add(tag(910, format(rwa)));
+        fields.add(tag(913, format(capitalCharge)));
+        return encode(fields);
+    }
+
+    public byte[] buildExposureReport(String account, double gross, double net, double limit) {
+        List<String> fields = base("EXP", account);
+        fields.add(tag(910, format(gross)));
+        fields.add(tag(912, format(net)));
+        fields.add(tag(917, format(limit)));
+        return encode(fields);
+    }
+
+    public byte[] buildSettlementInstruction(String account, String cusip, long qty, String settlDate) {
+        List<String> fields = base("SI", account);
+        fields.add(tag(48, cusip));
+        fields.add(tag(53, String.valueOf(qty)));
+        fields.add(tag(64, settlDate));
+        return encode(fields);
+    }
+
+    private void validateSubstitution(double outMv, double inMv) {
+        if (outMv <= 0 || inMv <= 0) {
+            throw new IllegalArgumentException("substitution values must be positive");
+        }
+    }
+
     private List<String> base(String msgType, String target) {
         List<String> fields = new ArrayList<>();
         fields.add(tag(8, "FIX.4.4"));

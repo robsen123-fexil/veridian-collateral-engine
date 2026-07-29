@@ -95,4 +95,90 @@ public final class CollateralPricingEngine {
         double h = grid.effectiveHaircut(assetClass, rating, false);
         return quote.cleanPrice * (1.0 - h);
     }
+
+    public BondQuote priceZeroCouponBond(String cusip, double face, int years, double ytm) {
+        BondQuote q = new BondQuote();
+        q.cusip = cusip;
+        q.faceValue = face;
+        q.couponRate = 0;
+        q.yearsToMaturity = years;
+        q.yieldToMaturity = ytm;
+        q.cleanPrice = face / Math.pow(1 + ytm, years);
+        q.dirtyPrice = q.cleanPrice;
+        q.duration = years;
+        q.convexity = (years * (years + 1)) / Math.pow(1 + ytm, 2);
+        return q;
+    }
+
+    public BondQuote priceSemiAnnualBond(String cusip, double face, double couponPct, int years, double ytm) {
+        BondQuote q = new BondQuote();
+        q.cusip = cusip;
+        q.faceValue = face;
+        q.couponRate = couponPct;
+        q.yearsToMaturity = years;
+        q.yieldToMaturity = ytm;
+        int periods = years * 2;
+        double c = face * couponPct / 100.0 / 2.0;
+        double y = ytm / 2.0;
+        double pv = 0;
+        for (int t = 1; t <= periods; t++) {
+            pv += c / Math.pow(1 + y, t);
+        }
+        pv += face / Math.pow(1 + y, periods);
+        q.cleanPrice = pv;
+        q.dirtyPrice = pv + accruedInterest(face, couponPct, 90) / 2.0;
+        q.duration = modifiedDuration(face, couponPct, years, ytm);
+        q.convexity = convexity(face, couponPct, years, ytm);
+        return q;
+    }
+
+    public double yieldFromPrice(double face, double couponPct, int years, double targetPrice) {
+        double lo = 0.0001;
+        double hi = 0.50;
+        for (int i = 0; i < 48; i++) {
+            double mid = (lo + hi) / 2.0;
+            BondQuote q = priceFixedRateBond("SOLVE", face, couponPct, years, mid);
+            if (q.cleanPrice > targetPrice) {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        return (lo + hi) / 2.0;
+    }
+
+    public double dv01(BondQuote quote) {
+        if (quote.yieldToMaturity == 0) {
+            return 0;
+        }
+        BondQuote up = priceFixedRateBond(quote.cusip, quote.faceValue, quote.couponRate,
+            quote.yearsToMaturity, quote.yieldToMaturity - 0.0001);
+        BondQuote down = priceFixedRateBond(quote.cusip, quote.faceValue, quote.couponRate,
+            quote.yearsToMaturity, quote.yieldToMaturity + 0.0001);
+        return (down.cleanPrice - up.cleanPrice) / 2.0;
+    }
+
+    public List<BondQuote> stressParallelShift(List<BondQuote> book, double shiftBps) {
+        List<BondQuote> out = new ArrayList<>();
+        double shift = shiftBps / 10_000.0;
+        for (BondQuote q : book) {
+            out.add(priceFixedRateBond(q.cusip, q.faceValue, q.couponRate,
+                q.yearsToMaturity, q.yieldToMaturity + shift));
+        }
+        return out;
+    }
+
+    public double portfolioDuration(List<BondQuote> book) {
+        double weighted = 0;
+        double total = 0;
+        for (BondQuote q : book) {
+            weighted += q.duration * q.cleanPrice;
+            total += q.cleanPrice;
+        }
+        return total <= 0 ? 0 : weighted / total;
+    }
+
+    public double spreadToBenchmark(BondQuote quote, double benchmarkYield) {
+        return quote.yieldToMaturity - benchmarkYield;
+    }
 }

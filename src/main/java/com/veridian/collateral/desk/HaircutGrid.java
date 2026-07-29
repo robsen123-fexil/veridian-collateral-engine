@@ -26,6 +26,29 @@ public final class HaircutGrid {
         put("CORP", "HY", 0.15, 0.10, 14);
         put("EQUITY", "LARGE", 0.20, 0.12, 2);
         put("EQUITY", "SMALL", 0.35, 0.20, 5);
+        seedExtendedRatings();
+    }
+
+    private void seedExtendedRatings() {
+        put("GOVT", "A", 0.035, 0.018, 2);
+        put("GOVT", "BBB", 0.05, 0.025, 3);
+        put("CORP", "AAA", 0.04, 0.02, 5);
+        put("CORP", "AA", 0.05, 0.025, 5);
+        put("CORP", "A", 0.07, 0.035, 7);
+        put("CORP", "BBB", 0.10, 0.05, 10);
+        put("CORP", "BB", 0.18, 0.09, 14);
+        put("EQUITY", "MID", 0.28, 0.16, 3);
+        put("MUNI", "AAA", 0.03, 0.015, 5);
+        put("MUNI", "AA", 0.045, 0.02, 7);
+        put("MUNI", "A", 0.06, 0.03, 10);
+        put("ABS", "AAA", 0.06, 0.03, 7);
+        put("ABS", "AA", 0.10, 0.05, 10);
+        put("ABS", "A", 0.14, 0.07, 14);
+        put("REPO", "GOVT", 0.01, 0.005, 1);
+        put("REPO", "CORP", 0.05, 0.02, 2);
+        put("CASH", "USD", 0.0, 0.0, 0);
+        put("CASH", "EUR", 0.005, 0.002, 0);
+        put("CASH", "GBP", 0.005, 0.002, 0);
     }
 
     public void put(String assetClass, String rating, double base, double stress, int tenor) {

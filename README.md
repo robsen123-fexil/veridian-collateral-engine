@@ -72,7 +72,14 @@ ClusterFuzzLite uses Jazzer with `-Djazzer.max_len=8192` and a single fat jar fo
 | `PositionLedger` | ledger | Custody position journal |
 | `AuditSpool` | ledger | Module audit spool |
 | `VaultCheckpointStore` | ledger | Checkpoint digest store |
+| `CollateralCoverageAnalyzer` | desk | Coverage ratio and deficit analysis |
+| `CollateralAllocationSolver` | desk | Priority-based collateral allocation |
+| `AssetEligibilityEngine` | desk | Asset eligibility screening |
+| `RegulatoryCapitalCalculator` | desk | RWA and capital charge calculator |
+| `CollateralWorkflowRegistry` | desk | Pledge/release/substitution workflows |
 | `VeridianCtl` | tools | CLI entry point |
+
+See module table above for the full collateral vault surface area (100+ source modules).
 
 ## Wire formats
 
