@@ -1,7 +1,6 @@
 plugins {
     java
     application
-    id("com.code-intelligence.jazzer") version "0.24.0" apply false
 }
 
 group = "com.veridian.collateral"
