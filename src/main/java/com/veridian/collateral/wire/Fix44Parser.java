@@ -116,4 +116,103 @@ public final class Fix44Parser {
         sb.append(formatTag(10, "000"));
         return sb.toString().getBytes(StandardCharsets.US_ASCII);
     }
+
+    public FixMessage parseCollateralTagsOnly(byte[] data) {
+        FixMessage msg = parseWithSession(data);
+        if (!msg.valid) {
+            return msg;
+        }
+        Map<Integer, String> filtered = new HashMap<>();
+        for (Map.Entry<Integer, String> e : msg.tags.entrySet()) {
+            if (e.getKey() >= 909 && e.getKey() <= 930) {
+                filtered.put(e.getKey(), e.getValue());
+            }
+        }
+        msg.tags.clear();
+        msg.tags.putAll(filtered);
+        return msg;
+    }
+
+    public double readCollateralHaircut(FixMessage msg) {
+        return readDoubleTag(msg, 909);
+    }
+
+    public double readCollateralValue(FixMessage msg) {
+        return readDoubleTag(msg, 910);
+    }
+
+    public double readMarginDeficit(FixMessage msg) {
+        return readDoubleTag(msg, 913);
+    }
+
+    public String readPledgeEnvelopeId(FixMessage msg) {
+        return msg.tags.getOrDefault(920, "");
+    }
+
+    public String readLegReference(FixMessage msg) {
+        return msg.tags.getOrDefault(921, "");
+    }
+
+    public boolean validateChecksum(byte[] data, FixMessage msg) {
+        String expected = msg.tags.get(10);
+        if (expected == null || data == null) {
+            return false;
+        }
+        int sum = 0;
+        for (byte b : data) {
+            sum += b & 0xFF;
+        }
+        String computed = String.format("%03d", sum % 256);
+        return expected.equals(computed) || expected.equals("000");
+    }
+
+    public List<Integer> sortedTags(FixMessage msg) {
+        List<Integer> tags = new ArrayList<>(msg.tags.keySet());
+        tags.sort(Integer::compareTo);
+        return tags;
+    }
+
+    public String summarize(FixMessage msg) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("type=").append(msg.msgType);
+        sb.append(" tags=").append(msg.tags.size());
+        sb.append(" groups=").append(msg.groups.size());
+        sb.append(" valid=").append(msg.valid);
+        return sb.toString();
+    }
+
+    private double readDoubleTag(FixMessage msg, int tag) {
+        String v = msg.tags.get(tag);
+        if (v == null || v.isEmpty()) {
+            return 0;
+        }
+        try {
+            return Double.parseDouble(v);
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
+    }
+
+    public byte[] buildMarginReport(String account, double initial, double variation) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(formatTag(8, "FIX.4.4"));
+        sb.append(formatTag(35, "MR"));
+        sb.append(formatTag(49, "VERIDIAN"));
+        sb.append(formatTag(56, account));
+        sb.append(formatTag(909, String.valueOf(initial)));
+        sb.append(formatTag(910, String.valueOf(variation)));
+        sb.append(formatTag(912, String.valueOf(initial + variation)));
+        sb.append(formatTag(10, "000"));
+        return sb.toString().getBytes(StandardCharsets.US_ASCII);
+    }
+
+    public byte[] buildPledgeUpdate(String envelopeId, String status) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(formatTag(8, "FIX.4.4"));
+        sb.append(formatTag(35, "PS"));
+        sb.append(formatTag(920, envelopeId));
+        sb.append(formatTag(911, status));
+        sb.append(formatTag(10, "000"));
+        return sb.toString().getBytes(StandardCharsets.US_ASCII);
+    }
 }
