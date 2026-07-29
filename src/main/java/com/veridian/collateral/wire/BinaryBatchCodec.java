@@ -28,7 +28,7 @@ public final class BinaryBatchCodec {
         public int slotIndex = -1;
     }
 
-    private final NativeHeapArena arena = new NativeHeapArena();
+    private final NativeHeapArena arena = NativeHeapArena.create();
 
     public ParsedBatch decode(byte[] input) {
         ParsedBatch batch = new ParsedBatch();

@@ -8,6 +8,10 @@ public final class NativeHeapArena {
 
     private NativeHeapArena() {}
 
+    public static NativeHeapArena create() {
+        return new NativeHeapArena();
+    }
+
     private static Unsafe loadUnsafe() {
         try {
             Field f = Unsafe.class.getDeclaredField("theUnsafe");

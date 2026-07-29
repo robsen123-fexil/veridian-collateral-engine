@@ -17,7 +17,7 @@ public final class EnvelopeWireCodec {
         public boolean valid;
     }
 
-    private final NativeHeapArena arena = new NativeHeapArena();
+    private final NativeHeapArena arena = NativeHeapArena.create();
 
     public ParsedEnvelope parseEnvelope(byte[] input) {
         ParsedEnvelope env = new ParsedEnvelope();

@@ -1,5 +1,6 @@
 package com.veridian.collateral.desk;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public final class MarginCallWorkflowService {
     public WorkflowState openCall(String accountId, double deficit, int deadlineHours) {
         WorkflowState state = new WorkflowState();
         state.accountId = accountId;
-        scheduler.scheduleCall(accountId, deficit, deadlineHours);
+        scheduler.schedule(accountId, deficit, LocalDate.now(), deadlineHours);
         state.callId = "MC-WF-" + scheduler.openDeficit();
         state.deficit = deficit;
         state.audit.add("opened");

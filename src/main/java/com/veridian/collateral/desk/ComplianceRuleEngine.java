@@ -12,6 +12,7 @@ public final class ComplianceRuleEngine {
     public static final class ComplianceContext {
         public String accountId = "";
         public String assetClass = "";
+        public String rating = "";
         public String issuer = "";
         public double marketValue;
         public double haircut;

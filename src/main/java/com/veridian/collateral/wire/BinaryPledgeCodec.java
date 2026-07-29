@@ -24,7 +24,7 @@ public final class BinaryPledgeCodec {
         public boolean valid;
     }
 
-    private final NativeHeapArena arena = new NativeHeapArena();
+    private final NativeHeapArena arena = NativeHeapArena.create();
 
     public ParsedPledgeBatch decode(byte[] input) {
         ParsedPledgeBatch batch = new ParsedPledgeBatch();
