@@ -16,6 +16,14 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    create("fuzz") {
+        compileClasspath += sourceSets["main"].output + configurations["compileClasspath"]
+        runtimeClasspath += sourceSets["main"].output + configurations["runtimeClasspath"]
+        java.srcDir("src/fuzz/java")
+    }
+}
+
 val jazzerStandalone: Configuration by configurations.creating {
     isCanBeConsumed = false
     isCanBeResolved = true
@@ -23,7 +31,7 @@ val jazzerStandalone: Configuration by configurations.creating {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-    "fuzzImplementation"("com.code-intelligence:jazzer-api:0.24.0")
+    add("fuzzImplementation", "com.code-intelligence:jazzer-api:0.24.0")
     jazzerStandalone("com.code-intelligence:jazzer-standalone:0.24.0")
 }
 
@@ -31,14 +39,6 @@ tasks.register<Copy>("stageJazzer") {
     from(jazzerStandalone)
     into(layout.buildDirectory.dir("jazzer"))
     rename { "jazzer-standalone.jar" }
-}
-
-sourceSets {
-    create("fuzz") {
-        compileClasspath += sourceSets["main"].output + configurations["compileClasspath"]
-        runtimeClasspath += sourceSets["main"].output + configurations["runtimeClasspath"]
-        java.srcDir("src/fuzz/java")
-    }
 }
 
 tasks.test {
